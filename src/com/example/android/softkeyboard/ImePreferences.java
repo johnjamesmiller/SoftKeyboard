@@ -52,4 +52,7 @@ public class ImePreferences extends PreferenceActivity {
             addPreferencesFromResource(R.xml.ime_preferences);
         }
     }
+    protected boolean isValidFragment(String fragmentName) {
+      return true;
+    }
 }

@@ -16,17 +16,15 @@
 
 package com.example.android.softkeyboard;
 
-import android.app.Dialog;
+import android.content.Intent;
 import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
-import android.os.IBinder;
 import android.text.InputType;
 import android.text.method.MetaKeyKeyListener;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.Window;
 import android.view.inputmethod.CompletionInfo;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
@@ -35,6 +33,7 @@ import android.view.inputmethod.InputMethodSubtype;
 
 import java.util.ArrayList;
 import java.util.List;
+
 
 /**
  * Example of writing an input method for a soft keyboard.  This code is
@@ -58,7 +57,7 @@ public class SoftKeyboard extends InputMethodService
     static final boolean PROCESS_HARD_KEYS = true;
 
     private InputMethodManager mInputMethodManager;
-
+    
     private LatinKeyboardView mInputView;
     private CandidateView mCandidateView;
     private CompletionInfo[] mCompletions;
@@ -78,6 +77,8 @@ public class SoftKeyboard extends InputMethodService
     private LatinKeyboard mCurKeyboard;
     
     private String mWordSeparators;
+
+    private Intent captureIntent;
     
     /**
      * Main initialization of the input method component.  Be sure to call
@@ -87,6 +88,9 @@ public class SoftKeyboard extends InputMethodService
         super.onCreate();
         mInputMethodManager = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
         mWordSeparators = getResources().getString(R.string.word_separators);
+//        captureIntent = new Intent(this , CaptureActivity.class);
+//        captureIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//        startActivity(captureIntent);
     }
     
     /**
@@ -117,15 +121,8 @@ public class SoftKeyboard extends InputMethodService
         mInputView = (LatinKeyboardView) getLayoutInflater().inflate(
                 R.layout.input, null);
         mInputView.setOnKeyboardActionListener(this);
-        setLatinKeyboard(mQwertyKeyboard);
+        mInputView.setKeyboard(mQwertyKeyboard);
         return mInputView;
-    }
-
-    private void setLatinKeyboard(LatinKeyboard nextKeyboard) {
-        final boolean shouldSupportLanguageSwitchKey =
-                mInputMethodManager.shouldOfferSwitchingToNextInputMethod(getToken());
-        nextKeyboard.setLanguageSwitchKeyVisibility(shouldSupportLanguageSwitchKey);
-        mInputView.setKeyboard(nextKeyboard);
     }
 
     /**
@@ -257,7 +254,7 @@ public class SoftKeyboard extends InputMethodService
     @Override public void onStartInputView(EditorInfo attribute, boolean restarting) {
         super.onStartInputView(attribute, restarting);
         // Apply the selected keyboard to the input view.
-        setLatinKeyboard(mCurKeyboard);
+        mInputView.setKeyboard(mCurKeyboard);
         mInputView.closing();
         final InputMethodSubtype subtype = mInputMethodManager.getCurrentInputMethodSubtype();
         mInputView.setSubtypeOnSpaceKey(subtype);
@@ -519,19 +516,19 @@ public class SoftKeyboard extends InputMethodService
         } else if (primaryCode == Keyboard.KEYCODE_CANCEL) {
             handleClose();
             return;
-        } else if (primaryCode == LatinKeyboardView.KEYCODE_LANGUAGE_SWITCH) {
-            handleLanguageSwitch();
-            return;
         } else if (primaryCode == LatinKeyboardView.KEYCODE_OPTIONS) {
             // Show a menu or somethin'
         } else if (primaryCode == Keyboard.KEYCODE_MODE_CHANGE
                 && mInputView != null) {
             Keyboard current = mInputView.getKeyboard();
             if (current == mSymbolsKeyboard || current == mSymbolsShiftedKeyboard) {
-                setLatinKeyboard(mQwertyKeyboard);
+                current = mQwertyKeyboard;
             } else {
-                setLatinKeyboard(mSymbolsKeyboard);
-                mSymbolsKeyboard.setShifted(false);
+                current = mSymbolsKeyboard;
+            }
+            mInputView.setKeyboard(current);
+            if (current == mSymbolsKeyboard) {
+                current.setShifted(false);
             }
         } else {
             handleCharacter(primaryCode, keyCodes);
@@ -607,11 +604,11 @@ public class SoftKeyboard extends InputMethodService
             mInputView.setShifted(mCapsLock || !mInputView.isShifted());
         } else if (currentKeyboard == mSymbolsKeyboard) {
             mSymbolsKeyboard.setShifted(true);
-            setLatinKeyboard(mSymbolsShiftedKeyboard);
+            mInputView.setKeyboard(mSymbolsShiftedKeyboard);
             mSymbolsShiftedKeyboard.setShifted(true);
         } else if (currentKeyboard == mSymbolsShiftedKeyboard) {
             mSymbolsShiftedKeyboard.setShifted(false);
-            setLatinKeyboard(mSymbolsKeyboard);
+            mInputView.setKeyboard(mSymbolsKeyboard);
             mSymbolsKeyboard.setShifted(false);
         }
     }
@@ -637,22 +634,6 @@ public class SoftKeyboard extends InputMethodService
         commitTyped(getCurrentInputConnection());
         requestHideSelf(0);
         mInputView.closing();
-    }
-
-    private IBinder getToken() {
-        final Dialog dialog = getWindow();
-        if (dialog == null) {
-            return null;
-        }
-        final Window window = dialog.getWindow();
-        if (window == null) {
-            return null;
-        }
-        return window.getAttributes().token;
-    }
-
-    private void handleLanguageSwitch() {
-        mInputMethodManager.switchToNextInputMethod(getToken(), false /* onlyCurrentIme */);
     }
 
     private void checkToggleCapsLock() {
