@@ -20,7 +20,7 @@
                 <action android:name="android.intent.action.MAIN"/>
             </intent-filter>
         </activity>
-        <activity android:name="edu.sfsu.cs.orange.ocr.CaptureActivity"
+        <activity android:name="com.example.android.softkeyboard.ocr.CaptureActivity"
               android:screenOrientation="landscape"
               android:configChanges="orientation|keyboardHidden|screenSize"
               android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
