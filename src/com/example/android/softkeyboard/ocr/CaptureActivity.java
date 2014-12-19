@@ -163,7 +163,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
   private CameraManager cameraManager;
   private CaptureActivityHandler handler;
-  private ViewfinderView viewfinderView;
+  public ViewfinderView viewfinderView;
   private SurfaceView surfaceView;
   private SurfaceHolder surfaceHolder;
   private TextView statusViewBottom;

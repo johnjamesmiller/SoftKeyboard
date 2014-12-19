@@ -34,6 +34,8 @@ import android.view.inputmethod.InputMethodSubtype;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.example.android.softkeyboard.ocr.CaptureActivity;
+
 
 /**
  * Example of writing an input method for a soft keyboard.  This code is
@@ -88,9 +90,9 @@ public class SoftKeyboard extends InputMethodService
         super.onCreate();
         mInputMethodManager = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
         mWordSeparators = getResources().getString(R.string.word_separators);
-//        captureIntent = new Intent(this , CaptureActivity.class);
-//        captureIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//        startActivity(captureIntent);
+        captureIntent = new Intent(this , CaptureActivity.class);
+        captureIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(captureIntent);
     }
     
     /**
